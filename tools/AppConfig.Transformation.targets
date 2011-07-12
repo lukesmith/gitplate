@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- 20110617 : Luke Smith : Imports Microsoft.WebApplication.targets for SP1 support. Added exists condition for when the TransformedConfig doesn't exist -->
+  <!-- 20110224 : Ryan Milligan : Created OverrideAppConfigWithTargetPath target to fix ClickOnce deploy bug -->
+  <!-- 20100827 : João Angelo   : Fixed bug when using Publish command within Visual Studio -->
+  <PropertyGroup>
+    <!-- Prevent circular dependency on Build target -->
+    <PipelineDependsOnBuild>false</PipelineDependsOnBuild>
+    <!-- Override project config file name (By default is set to Web.config) -->
+    <ProjectConfigFileName>App.config</ProjectConfigFileName>
+  </PropertyGroup>
+
+  <!-- The transformation target (TransformWebConfig) in this targets file-->
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />
+
+  <!-- Removes the need to set config files Build Action as Content -->
+  <ItemGroup>
+    <FilesForPackagingFromProject Include="$(ProjectConfigFileName)">
+      <DestinationRelativePath>$(ProjectConfigFileName)</DestinationRelativePath>
+    </FilesForPackagingFromProject>
+  </ItemGroup>
+
+  <!-- Insert transformation targets in the build process -->
+  <PropertyGroup>
+    <BuildDependsOn>
+      TransformWebConfig;
+      OverrideAppConfigWithTargetPath;
+      $(BuildDependsOn);
+      CopyTransformedConfig
+    </BuildDependsOn>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <TransformedConfig>$(TransformWebConfigIntermediateLocation)\transformed\App.config</TransformedConfig>
+  </PropertyGroup>
+
+  <!-- Overrides AppConfigWithTargetPath allowing the transformed config to be used for manifest generation -->
+  <Target Name="OverrideAppConfigWithTargetPath">
+    <ItemGroup>
+      <AppConfigWithTargetPath Remove="@(AppConfigWithTargetPath)" />
+      <AppConfigWithTargetPath Include="$(TransformedConfig)" Condition="'$(TransformedConfig)'!='' AND Exists('$(TransformedConfig)')">
+        <TargetPath>$(TargetFileName).config</TargetPath>
+      </AppConfigWithTargetPath>
+    </ItemGroup>
+  </Target>
+
+  <!-- Copy transformed file to output directory -->
+  <Target Name="CopyTransformedConfig" Condition="'$(TargetName)' != ''">
+    <Copy Condition="Exists('$(TransformedConfig)')"
+          SourceFiles="$(TransformedConfig)"          
+          DestinationFiles="$(OutputPath)$(TargetName)$(TargetExt).config" />
+    <Copy Condition="Exists('$(TransformedConfig)') And '$(TargetExt)' == '.exe'"          
+          SourceFiles="$(TransformedConfig)"          
+          DestinationFiles="$(OutputPath)$(TargetName).vshost.exe.config" />
+  </Target>
+
+  <!--        
+  Override After Publish to support ClickOnce
+  
+  AfterPublish target replaces the untransformed config file copied to the
+  deployment directory with the transformed one  
+  -->
+  <Target Name="AfterPublish">  
+    <PropertyGroup>
+      <DeployedConfig>$(_DeploymentApplicationDir)$(TargetName)$(TargetExt).config$(_DeploymentFileMappingExtension)</DeployedConfig>
+    </PropertyGroup>
+    <!-- Publish copies the unstransformed App.config to deployment directory so overwrite it -->
+    <Copy Condition="Exists('$(DeployedConfig)')"
+          SourceFiles="$(TransformedConfig)"
+          DestinationFiles="$(DeployedConfig)" />
+    </Target>
+</Project>

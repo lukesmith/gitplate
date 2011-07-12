@@ -1,0 +1,14 @@
+_ReSharper.*/
+*resharper.user
+.idea/
+[Bb]in/
+[Oo]bj/
+*.sln.cache
+*.suo
+*.sln.docstates
+*.user
+StyleCop.Cache
+[Dd]ebug/
+[Rr]elease/
+packages/
+build/
