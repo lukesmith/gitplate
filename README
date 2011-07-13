@@ -1,0 +1,8 @@
+Gitplate is a templating solution using git.
+
+Do you often create new projects and have a common repository structure you like to use, with a set of basic build scripts? Gitplate aims to make it quick and simple to get a new project up and running. Point gitplate at any git repository to have it cloned, archived and reinitialised. Gitplate will also run an initialisation script on the new repository to rename files and perform any extra actions you require on the new repository.
+
+Example usage:
+gitplate git://github.com/lukesmith/RepositoryTemplate
+
+Currently gitplate is being thrown together in .NET, it's not the prettiest code at present :) If I like the idea and it actually appears useful then I'll look at converting it to something more cross-platform.
