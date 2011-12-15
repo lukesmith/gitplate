@@ -1,0 +1,5 @@
+= gitplate
+
+Generate this with
+    gitplate rdoc
+After you have described your command line interface

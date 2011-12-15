@@ -1,0 +1,6 @@
+= gitplate
+
+Describe your project here
+
+:include:gitplate.rdoc
+
