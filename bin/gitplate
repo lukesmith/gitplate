@@ -16,6 +16,7 @@ require 'rainbow'
 require 'gli'
 require 'gli_version'
 require 'gitplate/gitplate'
+require 'gitplate/plate'
 
 include GLI
 

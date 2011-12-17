@@ -34,6 +34,14 @@ module Gitplate
     Dir.chdir name do
       Git.init
     end
+
+    # pull in the plate file from the cloned repository
+    plate = File.expand_path(File.join(name, 'plate'))
+    if (File.exists?(plate))
+      load "#{plate}"
+    end
+
+    Gitplate::Plate.instance.run
   end
 
   def self.clear_directory(dir)
