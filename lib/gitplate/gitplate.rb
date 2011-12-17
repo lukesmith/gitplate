@@ -4,16 +4,9 @@ module Gitplate
 
   VERSION = "0.0.1"
 
-  def self.execute_command(tool, args)
-    args.flatten!
-
-    puts "  ./#{tool.to_s} #{args[1..-1].join(' ')}".color(:cyan).bright
-    system args.join ' '
-  end
-
   def self.install(name, repository)
     if (File.directory? name)
-      raise "Directory already exists"
+      fatal_msg_and_fail "Directory already exists"
     end
 
     puts "creating #{name} based on #{repository}"
@@ -38,10 +31,26 @@ module Gitplate
     # pull in the plate file from the cloned repository
     plate = File.expand_path(File.join(name, 'plate'))
     if (File.exists?(plate))
-      load "#{plate}"
+      Gitplate::Plate.instance.run(
+          plate,
+          :project_name => name,
+          :project_dir => File.expand_path(name))
+    else
+      debug_msg "no plate file found in repository"
     end
+  end
 
-    Gitplate::Plate.instance.run
+  def self.debug_msg(msg)
+    puts msg.color(:cyan).bright
+  end
+
+  def self.fatal_msg(msg)
+    puts msg.color(:red).bright
+  end
+
+  def self.fatal_msg_and_fail(msg)
+    fatal_msg msg
+    raise msg
   end
 
   def self.clear_directory(dir)

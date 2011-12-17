@@ -12,42 +12,70 @@ module Gitplate
       @actions
     end
 
-    def add_message(msg)
-      foo = Proc.new { puts msg }
-      add_action &foo
+    def output(type, msg)
+      instance = Gitplate::Outputs.const_get(to_class_name(type)).new
+      instance.execute msg
     end
 
-    def add_custom(&block)
-      add_action &block
+    def custom(&block)
+      block.call
     end
 
-    def add_rename(from = nil, to = nil)
-      foo = Proc.new { File.rename from, to }
-      add_action &foo
+    def rename(from = nil, to = nil)
+      Gitplate.debug_msg "  renaming #{from} to #{to}"
+      File.rename(expand_path(from), expand_path(to))
     end
 
-    def add_action(&action)
-      @actions << action
+    def project_name
+      @project_name
     end
 
-    def run
-      @actions.each do |action|
-        action.call
+    def run(file, args)
+      @project_name = args[:project_name]
+      @project_dir = args[:project_dir]
+
+      Gitplate.debug_msg "running plate - start"
+      load file
+      Gitplate.debug_msg "running plate - completed"
+    end
+
+    def to_class_name(type)
+      type.to_s.split('_').map{|word| word.capitalize}.join
+    end
+
+    def expand_path(path)
+      File.expand_path(File.join(@project_dir, path))
+    end
+  end
+
+  module Outputs
+    class Debug
+      def execute(msg)
+        puts msg.color(:cyan).bright
       end
-      puts "You got fasfhasifhoahao."
+    end
+
+    class Fatal
+      def execute(msg)
+        puts msg.color(:red).bright
+      end
     end
   end
 
 end
 
-def message(msg)
-  Gitplate::Plate.instance.add_message msg
+def project_name
+  Gitplate::Plate.instance.project_name
+end
+
+def output(type, msg)
+  Gitplate::Plate.instance.output type, "  #{msg}"
 end
 
 def custom(&block)
-  Gitplate::Plate.instance.add_custom &block
+  Gitplate::Plate.instance.custom &block
 end
 
 def rename(from, to)
-  Gitplate::Plate.instance.add_rename from, to
+  Gitplate::Plate.instance.rename from, to
 end
