@@ -12,6 +12,8 @@ end
 spec = eval(File.read('gitplate.gemspec'))
 
 Gem::PackageTask.new(spec) do |pkg|
+  pkg.need_zip = true
+  pkg.need_tar = true
 end
 
 require 'rake/testtask'
