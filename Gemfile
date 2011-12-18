@@ -4,3 +4,4 @@ source "http://rubygems.org"
 gemspec
 
 gem "git", "~> 1.2.5"
+gem "rubyzip"

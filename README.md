@@ -9,8 +9,14 @@ repository. This plate file can contain tasks to rename files as well as any ext
     gem install gitplate
 
 
-#### Example usage
-    gitplate myproject git://github.com/lukesmith/RepositoryTemplate
+#### Example
+Initialize an existing git repository for gitplate. Creates a .gitplate directory with a sample plate file
+
+    gitplate init
+
+Install an existing repository to setup a new project
+
+    gitplate install myproject git://github.com/lukesmith/RepositoryTemplate
 
 
 #### Example plate file:

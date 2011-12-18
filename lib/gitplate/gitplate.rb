@@ -1,49 +1,87 @@
 require 'Git'
+require 'zip/zip'
 
 module Gitplate
 
-  VERSION = "0.0.1"
+  VERSION = "0.0.2"
 
   def self.config_file
     '.gitplate/config.yml'
   end
 
-  def self.install(name, repository)
-    if (File.directory? name)
+  def self.plate_file
+    '.gitplate/plate'
+  end
+
+  def self.init
+    init_directory_for_gitplate
+
+    if (!File.exists?(plate_file))
+      debug_msg "Creating sample plate file"
+
+      # create the sample plate file
+      File.open(plate_file, "w") { |f|
+        f.write("init do\n")
+        f.write("  # add code to run when installing a new project\n")
+        f.write("end\n")
+      }
+    end
+  end
+
+  def self.get_plate_repository(project_name, repository)
+    source_repository_sha = ""
+
+    Dir.chdir project_name do
+      # create a gitplate directory structure for checking out the repository to
+      out_path = File.expand_path(File.join('.gitplate', 'tmp', 'checkout'))
+      FileUtils.mkdir_p out_path
+
+      archive_file = File.expand_path(File.join('.gitplate', 'tmp', "#{project_name}.zip"))
+
+      Dir.chdir out_path do
+        source_repository = Git.clone(repository, project_name)
+        source_repository_sha = source_repository.object('HEAD').sha
+
+        source_repository.archive(source_repository_sha, archive_file, :format => "zip")
+      end
+
+      unzip_file archive_file, Dir.pwd
+
+      # get rid of the temporary directory
+      clear_directory File.expand_path(File.join('.gitplate', 'tmp'))
+    end
+
+    source_repository_sha
+  end
+
+  def self.install(project_name, repository)
+    if (File.directory? project_name)
       fatal_msg_and_fail "Directory already exists"
     end
 
-    info_msg "creating #{name} based on #{repository}"
+    info_msg "creating #{project_name} based on #{repository}"
 
-    out_path = File.expand_path(File.join(name, 'tmp', 'checkout'))
-    FileUtils.mkdir_p out_path
+    FileUtils.mkdir_p project_name
     
-    source_repository = Git.clone(repository, name, :path => out_path)
-    source_repository_sha = source_repository.object('HEAD').sha
+    source_repository_sha = get_plate_repository(project_name, repository)
 
-    # move the repository files to the main directory
-    files = Dir.glob("#{out_path}/#{name}/*") - [name]
-    FileUtils.mkdir name unless File.directory? name
-    FileUtils.cp_r files, name
-
-    Dir.chdir name do
-      # get rid of the temporary checkout directory
-      clear_directory File.expand_path(File.join('tmp'))
-
-      create_gitplate_file
+    # we've got the repository cloned and cleaned up of existing git history
+    Dir.chdir project_name do
+      # Ensure the directory has been initialized with gitplate
+      init_directory_for_gitplate
+      
       update_config_with({
-          :project => { :name => name },
+          :project => { :name => project_name },
           :repository => { :url => repository, :sha => source_repository_sha },
           :gitplate_version => Gitplate::VERSION
         })
 
       # pull in the plate file from the cloned repository
-      plate_file = 'plate'
       if (File.exists?(plate_file))
         Gitplate::Plate.instance.run(
             plate_file,
             {
-              :project_name => name,
+              :project_name => project_name,
               :project_dir => Dir.pwd
             })
       else
@@ -60,7 +98,7 @@ module Gitplate
     config = load_gitplate_file
 
     Gitplate::Plate.instance.run_task(
-        'plate',
+        plate_file,
         task,
         {
           :project_name => config["project"]["name"],
@@ -68,10 +106,13 @@ module Gitplate
         })
   end
 
-  def self.create_gitplate_file()
-    FileUtils.mkdir_p '.gitplate'
+  def self.init_directory_for_gitplate()
+    if (!File.directory? name)
+      FileUtils.mkdir_p '.gitplate'
+    end
 
     if (!File.exists?(config_file))
+      debug_msg "Creating config file"
       File.open(config_file, 'w') { |f| YAML.dump({}, f) }
     end
   end
@@ -128,5 +169,15 @@ module Gitplate
 
     result
   end
+
+  def self.unzip_file(file, destination)
+    Zip::ZipFile.open(file) { |zip_file|
+      zip_file.each { |f|
+        f_path=File.join(destination, f.name)
+        FileUtils.mkdir_p(File.dirname(f_path))
+        zip_file.extract(f, f_path) unless File.exist?(f_path)
+     }
+  }
+end
   
 end
