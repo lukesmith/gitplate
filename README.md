@@ -5,13 +5,15 @@ scripts? Gitplate aims to make it quick and simple to get a new project up and r
 repository to have a new project created in its image. Gitplate will also run a 'plate' file on the new
 repository. This plate file can contain tasks to rename files as well as any extra actions you require.
 
-Installation:
-gem install gitplate
+#### Installation:
+    gem install gitplate
 
-Example usage:
-gitplate myproject git://github.com/lukesmith/RepositoryTemplate
 
-Example plate file:
-rename 'SampleSolution.sln', "#{project_name}.sln"
-rename 'SampleSolution.build.bat', "#{project_name}.build.bat"
-rename 'SampleSolution.package.bat', "#{project_name}.package.bat"
+#### Example usage
+    gitplate myproject git://github.com/lukesmith/RepositoryTemplate
+
+
+#### Example plate file:
+    rename 'SampleSolution.sln', "#{project_name}.sln"
+    rename 'SampleSolution.build.bat', "#{project_name}.build.bat"
+    rename 'SampleSolution.package.bat', "#{project_name}.package.bat"
