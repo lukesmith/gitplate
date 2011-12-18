@@ -25,30 +25,29 @@ module Gitplate
     FileUtils.mkdir name unless File.directory? name
     FileUtils.cp_r files, name
 
-    # get rid of the temporary checkout directory
-    clear_directory File.expand_path(File.join(name, 'tmp'))
-
     Dir.chdir name do
-      Git.init
+      # get rid of the temporary checkout directory
+      clear_directory File.expand_path(File.join('tmp'))
+
+      g = Git.init
 
       create_gitplate_file
       update_config_with :project_name, name
-    end
 
-    # pull in the plate file from the cloned repository
-    plate_file = File.expand_path(File.join(name, 'plate'))
-    if (File.exists?(plate_file))
-      Gitplate::Plate.instance.run(
-          plate_file,
-          :project_name => name,
-          :project_dir => File.expand_path(name))
-    else
-      debug_msg "no plate file found in repository"
-    end
+      # pull in the plate file from the cloned repository
+      plate_file = 'plate'
+      if (File.exists?(plate_file))
+        Gitplate::Plate.instance.run(
+            plate_file,
+            :project_name => name,
+            :project_dir => Dir.pwd)
+      else
+        debug_msg "no plate file found in repository"
+      end
 
-    g = Git.open name
-    g.add
-    g.commit "Initial commit"
+      g.add
+      g.commit "Initial commit"
+    end
   end
 
   def self.custom(task, args)
