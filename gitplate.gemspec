@@ -2,23 +2,22 @@
 $:.push File.expand_path("../lib", __FILE__)
 
 require "gitplate/gitplate"
+require "gitplate/plate"
 
 Gem::Specification.new do |s|
   s.name        = "gitplate"
   s.version     = Gitplate::VERSION
   s.authors     = ["Luke Smith"]
-  s.email       = ["dev@lukesmith.net"]
-  s.homepage    = ""
+  s.email       = ["stuff@lukesmith.net"]
+  s.homepage    = "http://www.gitplate.com/"
   s.platform    = Gem::Platform::RUBY
   s.summary     = "Project templates from a git repository"
   s.description = "Project templates from a git repository"
 
   s.rubyforge_project = "gitplate"
 
-  s.files = %w(
-bin/gitplate
-  )
-  s.require_paths = ["lib"]
+  s.files        = Dir["{lib}/**/*.rb", "bin/*", "LICENSE", "*.md"]
+  s.require_path = 'lib'
 
   s.add_runtime_dependency "gli"
   s.add_runtime_dependency "rainbow"
