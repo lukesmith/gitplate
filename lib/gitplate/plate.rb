@@ -4,12 +4,22 @@ module Gitplate
   class Plate
     include Singleton
 
+    def initialize
+      @custom_tasks = Hash.new
+    end
+
     def add_init(&block)
       if (@init != nil)
         Gitplate.fatal_msg_and_fail "Init can only be defined once"
       end
 
+      Gitplate.debug_msg "  found init"
       @init = block
+    end
+
+    def add_custom_task(task_name, &block)
+      Gitplate.debug_msg "  found custom task '#{task_name}'"
+      @custom_tasks[task_name.to_s] = block
     end
 
     def output(type, msg)
@@ -31,17 +41,37 @@ module Gitplate
     end
 
     def run(file, args)
-      @project_name = args[:project_name]
-      @project_dir = args[:project_dir]
-
-      Gitplate.debug_msg "running plate - start"
-      load file
+      load_plate file, args
 
       if (@init != nil)
+        Gitplate.debug_msg "running plate - start"
         @init.call
+        Gitplate.debug_msg "running plate - completed"
+      end
+    end
+
+    def run_task(file, task_name, args)
+      load_plate file, args
+
+      task = @custom_tasks[task_name]
+
+      if (task == nil)
+        Gitplate.fatal_msg_and_fail "Unable to find custom task '#{task_name}'"
       end
 
-      Gitplate.debug_msg "running plate - completed"
+      Gitplate.debug_msg "running task '#{task_name}'"
+      task.call
+    end
+
+    def load_plate(file, args)
+      @project_name = args[:project_name]
+      @project_dir = args[:project_dir]
+      
+      #file = "/Users/lukesmith/Projects/gitplate/tmp/plate"
+
+      Gitplate.debug_msg "loading plate from '#{file}'"
+      load file
+      Gitplate.debug_msg "loaded plate"
     end
 
     def to_class_name(type)
@@ -87,4 +117,8 @@ end
 
 def rename(from, to)
   Gitplate::Plate.instance.rename from, to
+end
+
+def custom_task(task_name, &block)
+  Gitplate::Plate.instance.add_custom_task task_name, &block
 end

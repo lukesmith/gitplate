@@ -42,6 +42,13 @@ command :install do |c|
   end
 end
 
+desc 'Run custom task'
+command :custom do |c|
+  c.action do |g, options, args|
+    Gitplate.custom args[0], args[1..-1]
+  end
+end
+
 pre do |global,command,options,args|
   if (global[:v])
     puts Gitplate::VERSION

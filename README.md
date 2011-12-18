@@ -19,3 +19,7 @@ repository. This plate file can contain tasks to rename files as well as any ext
       rename 'SampleSolution.build.bat', "#{project_name}.build.bat"
       rename 'SampleSolution.package.bat', "#{project_name}.package.bat"
     end
+
+    custom_task :dosomething do
+      # call via 'gitplate custom dosomething'
+    end
