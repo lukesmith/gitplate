@@ -3,13 +3,13 @@ module Gitplate
 
   class Plate
     include Singleton
-    
-    def initialize
-      @actions = []
-    end
 
-    def self.actions
-      @actions
+    def add_init(&block)
+      if (@init != nil)
+        Gitplate.fatal_msg_and_fail "Init can only be defined once"
+      end
+
+      @init = block
     end
 
     def output(type, msg)
@@ -36,6 +36,11 @@ module Gitplate
 
       Gitplate.debug_msg "running plate - start"
       load file
+
+      if (@init != nil)
+        @init.call
+      end
+
       Gitplate.debug_msg "running plate - completed"
     end
 
@@ -62,6 +67,10 @@ module Gitplate
     end
   end
 
+end
+
+def init(&block)
+  Gitplate::Plate.instance.add_init &block
 end
 
 def project_name
