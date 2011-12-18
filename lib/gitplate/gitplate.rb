@@ -38,6 +38,10 @@ module Gitplate
     else
       debug_msg "no plate file found in repository"
     end
+
+    g = Git.open name
+    g.add
+    g.commit "Initial commit"
   end
 
   def self.debug_msg(msg)
