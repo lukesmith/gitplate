@@ -27,7 +27,6 @@ bin/gitplate
   s.add_development_dependency('rdoc')
 
   s.has_rdoc = true
-  s.extra_rdoc_files = ['README.rdoc','gitplate.rdoc']
   s.rdoc_options << '--title' << 'gitplate' << '--main' << 'README.rdoc' << '-ri'
   s.bindir = 'bin'
   s.executables << 'gitplate'

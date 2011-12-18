@@ -10,7 +10,9 @@ unless File.respond_to? :realpath
     end
   end
 end
+
 $: << File.expand_path(File.dirname(File.realpath(__FILE__)) + '/../lib')
+
 require 'rubygems'
 require 'rainbow'
 require 'gli'
@@ -25,16 +27,26 @@ program_desc 'Generates a directory structure from a git repository'
 version Gitplate::VERSION
 
 desc 'Install the gitplate'
+long_desc <<EOS
+This will create a new git repository based on a copy of the repository specified. If a plate file exists in the
+repository then this will be ran against the new project
+EOS
+arg_name 'project_name plate_repository'
 command :install do |c|
-  c.action do |global_options, options, args|
-    if args.length < 1
-      raise 'You must specify the url of the git repository'
+  c.action do |g, options, args|
+    if args.length < 2
+      raise 'You must specify the name of the new project and the url of the git repository'
     end
+    
     Gitplate.install args[0], args[1]
   end
 end
 
 pre do |global,command,options,args|
+  if (global[:v])
+    puts Gitplate::VERSION
+    false
+  end
   # Pre logic here
   # Return true to proceed; false to abort and not call the
   # chosen command
