@@ -13,7 +13,7 @@ module Gitplate
       fatal_msg_and_fail "Directory already exists"
     end
 
-    puts "creating #{name} based on #{repository}"
+    info_msg "creating #{name} based on #{repository}"
 
     out_path = File.expand_path(File.join(name, 'tmp', 'checkout'))
     FileUtils.mkdir_p out_path
@@ -29,8 +29,6 @@ module Gitplate
       # get rid of the temporary checkout directory
       clear_directory File.expand_path(File.join('tmp'))
 
-      g = Git.init
-
       create_gitplate_file
       update_config_with :project_name, name
 
@@ -39,12 +37,15 @@ module Gitplate
       if (File.exists?(plate_file))
         Gitplate::Plate.instance.run(
             plate_file,
-            :project_name => name,
-            :project_dir => Dir.pwd)
+            {
+              :project_name => name,
+              :project_dir => Dir.pwd
+            })
       else
         debug_msg "no plate file found in repository"
       end
 
+      g = Git.init
       g.add
       g.commit "Initial commit"
     end
@@ -53,14 +54,13 @@ module Gitplate
   def self.custom(task, args)
     config = load_gitplate_file
 
-    project_dir = Dir.pwd
-    plate_file = File.expand_path(File.join(project_dir, "plate"))
-
     Gitplate::Plate.instance.run_task(
-        plate_file,
+        'plate',
         task,
-        :project_name => config["project_name"],
-        :project_dir => project_dir)
+        {
+          :project_name => config["project_name"],
+          :project_dir => Dir.pwd
+        })
   end
 
   def self.create_gitplate_file()
@@ -80,6 +80,10 @@ module Gitplate
     config[key.to_s] = value
 
     File.open(config_file, 'w') { |f| YAML.dump(config, f) }
+  end
+
+  def self.info_msg(msg)
+    puts msg.color(:green).bright
   end
 
   def self.debug_msg(msg)

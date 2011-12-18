@@ -40,6 +40,10 @@ module Gitplate
       @project_name
     end
 
+    def project_dir
+      @project_dir
+    end
+
     def run(file, args)
       load_plate file, args
 
@@ -59,8 +63,9 @@ module Gitplate
         Gitplate.fatal_msg_and_fail "Unable to find custom task '#{task_name}'"
       end
 
-      Gitplate.debug_msg "running task '#{task_name}'"
+      Gitplate.debug_msg "running task '#{task_name}' - start"
       task.call
+      Gitplate.debug_msg "running task '#{task_name}' - completed"
     end
 
     def load_plate(file, args)
@@ -105,6 +110,10 @@ end
 
 def project_name
   Gitplate::Plate.instance.project_name
+end
+
+def project_dir
+  Gitplate::Plate.instance.project_dir
 end
 
 def output(type, msg)
