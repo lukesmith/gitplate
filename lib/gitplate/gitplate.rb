@@ -6,18 +6,22 @@ module Gitplate
   VERSION = "0.0.2"
 
   def self.config_file
-    '.gitplate/config.yml'
+    "#{gitplate_dir}/config.yml"
   end
 
   def self.plate_file
-    '.gitplate/plate'
+    "#{gitplate_dir}/plate"
+  end
+
+  def self.gitplate_dir
+    '.gitplate'
   end
 
   def self.init
-    init_directory_for_gitplate
+    init_gitplate_dir
 
     if (!File.exists?(plate_file))
-      debug_msg "Creating sample plate file"
+      debug_msg "Creating sample plate file #{plate_file}"
 
       # create the sample plate file
       File.open(plate_file, "w") { |f|
@@ -33,10 +37,10 @@ module Gitplate
 
     Dir.chdir project_name do
       # create a gitplate directory structure for checking out the repository to
-      out_path = File.expand_path(File.join('.gitplate', 'tmp', 'checkout'))
+      out_path = File.expand_path(File.join(gitplate_dir, 'tmp', 'checkout'))
       FileUtils.mkdir_p out_path
 
-      archive_file = File.expand_path(File.join('.gitplate', 'tmp', "#{project_name}.zip"))
+      archive_file = File.expand_path(File.join(gitplate_dir, 'tmp', "#{project_name}.zip"))
 
       Dir.chdir out_path do
         source_repository = Git.clone(repository, project_name)
@@ -48,7 +52,7 @@ module Gitplate
       unzip_file archive_file, Dir.pwd
 
       # get rid of the temporary directory
-      clear_directory File.expand_path(File.join('.gitplate', 'tmp'))
+      clear_directory File.expand_path(File.join(gitplate_dir, 'tmp'))
     end
 
     source_repository_sha
@@ -67,13 +71,11 @@ module Gitplate
 
     # we've got the repository cloned and cleaned up of existing git history
     Dir.chdir project_name do
-      # Ensure the directory has been initialized with gitplate
-      init_directory_for_gitplate
+      ensure_gitplate_dir
       
       update_config_with({
           :project => { :name => project_name },
-          :repository => { :url => repository, :sha => source_repository_sha },
-          :gitplate_version => Gitplate::VERSION
+          :repository => { :url => repository, :sha => source_repository_sha }
         })
 
       # pull in the plate file from the cloned repository
@@ -106,15 +108,23 @@ module Gitplate
         })
   end
 
-  def self.init_directory_for_gitplate()
-    if (!File.directory? name)
-      FileUtils.mkdir_p '.gitplate'
+  def self.init_gitplate_dir(update_version = true)
+    if (!File.directory? gitplate_dir)
+      FileUtils.mkdir_p gitplate_dir
     end
 
     if (!File.exists?(config_file))
       debug_msg "Creating config file"
       File.open(config_file, 'w') { |f| YAML.dump({}, f) }
     end
+
+    if (update_version)
+      update_config_with({ :gitplate => { :init_version => Gitplate::VERSION } })
+    end
+  end
+
+  def self.ensure_gitplate_dir
+    init_gitplate_dir false
   end
 
   def self.load_gitplate_file
