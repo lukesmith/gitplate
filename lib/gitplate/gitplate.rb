@@ -51,7 +51,7 @@ module Gitplate
     end
   end
 
-  def self.custom(task, args)
+  def self.task(task, args)
     config = load_gitplate_file
 
     Gitplate::Plate.instance.run_task(

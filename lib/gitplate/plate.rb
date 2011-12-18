@@ -5,7 +5,7 @@ module Gitplate
     include Singleton
 
     def initialize
-      @custom_tasks = Hash.new
+      @tasks = Hash.new
     end
 
     def add_init(&block)
@@ -17,9 +17,9 @@ module Gitplate
       @init = block
     end
 
-    def add_custom_task(task_name, &block)
-      Gitplate.debug_msg "  found custom task '#{task_name}'"
-      @custom_tasks[task_name.to_s] = block
+    def add_task(task_name, &block)
+      Gitplate.debug_msg "  found task '#{task_name}'"
+      @tasks[task_name.to_s] = block
     end
 
     def output(type, msg)
@@ -57,7 +57,7 @@ module Gitplate
     def run_task(file, task_name, args)
       load_plate file, args
 
-      task = @custom_tasks[task_name]
+      task = @tasks[task_name]
 
       if (task == nil)
         Gitplate.fatal_msg_and_fail "Unable to find custom task '#{task_name}'"
@@ -128,6 +128,6 @@ def rename(from, to)
   Gitplate::Plate.instance.rename from, to
 end
 
-def custom_task(task_name, &block)
-  Gitplate::Plate.instance.add_custom_task task_name, &block
+def task(task_name, &block)
+  Gitplate::Plate.instance.add_task task_name, &block
 end

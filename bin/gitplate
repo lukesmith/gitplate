@@ -42,10 +42,10 @@ command :install do |c|
   end
 end
 
-desc 'Run custom task'
-command :custom do |c|
+desc 'Run task'
+command :task do |c|
   c.action do |g, options, args|
-    Gitplate.custom args[0], args[1..-1]
+    Gitplate.task args[0], args[1..-1]
   end
 end
 
