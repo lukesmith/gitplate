@@ -22,6 +22,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "gli"
   s.add_runtime_dependency "rainbow"
   s.add_runtime_dependency "rubyzip"
+  s.add_runtime_dependency "git"
 
   s.add_development_dependency('rake')
   s.add_development_dependency('rdoc')
