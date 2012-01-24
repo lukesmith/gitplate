@@ -10,4 +10,7 @@ package_with :gem
 
 publish_with :ruby_gems
 
+post_publish :git_tag_release
+
+with_hook :git_commit_hashes
 with_hook :teamcity
