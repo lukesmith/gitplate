@@ -2,7 +2,6 @@
 $:.push File.expand_path("../lib", __FILE__)
 
 require "gitplate/gitplate"
-require "gitplate/plate"
 
 Gem::Specification.new do |s|
   s.name        = "gitplate"
@@ -24,8 +23,13 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "rubyzip"
   s.add_runtime_dependency "git"
 
-  s.add_development_dependency('rake')
-  s.add_development_dependency('rdoc')
+  s.add_development_dependency 'git'
+  s.add_development_dependency 'rubyzip'
+  s.add_development_dependency 'rake'
+  s.add_development_dependency 'rdoc'
+  s.add_development_dependency 'test-unit'
+  #s.add_development_dependency 'bozo'
+  #s.add_development_dependency 'bozo-scripts'
 
   s.has_rdoc = true
   s.rdoc_options << '--title' << 'gitplate' << '--main' << 'README.rdoc' << '-ri'
